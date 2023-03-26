@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Balaji's Bet Tracker</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <section class="section content">
+        <h1 class="title">Balaji's Bet Tracker</h1>
+        
+        <div class="section hero is-warning">
+            <div class="content">
+                <p class="title">Bitcoin price: $<span id="realtime-price"></span></p>
+            </div>
+            <div id="countdown" class="subtitle"></div>
+        </div>
+        
+        <div id="chart" class="content"></div>
+        
+        <div class="columns">
+          <div class="column is-half content">
+            <h2 class="subtitle">Context</h2>
+            <p><em>TL;DR: Balaji Srinivasan believes that an impending crisis will lead to the deflation of the U.S. dollar, causing hyperinflation, and as a result, Bitcoin's price will rise to $1 million.</em></p>
+            
+            <p>In March 2023, a Twitter user named James Medlock offered a bold wager of $1 million, betting that the United States would not enter a state of hyperinflation. Balaji Srinivasan, the former Chief Technology Officer of Coinbase, responded by accepting the bet, proposing a deal with roughly 40:1 odds. Balaji offered to send $1 million USD to James Medlock if he buys 1 Bitcoin (BTC), which was valued around $26,000 at the time. The bet had a 90-day term, and Balaji suggested the use of a smart contract or a mutually agreed-upon custodian to settle the bet in the event of digital dollar devaluation.</p>
+            
+            <p>The terms of the bet were that if Bitcoin's price fails to reach $1 million by June 17, 2023, Medlock will win $1 million worth of the dollar-pegged stablecoin USD Coin (USDC) and 1 BTC. However, if Bitcoin is worth at least $1 million by the specified date, Balaji can keep the 1 BTC and the $1 million in USDC.</p>
+            
+            <p>The reasoning behind Balaji's bold prediction is rooted in his belief that an impending crisis will lead to the deflation of the U.S. dollar, which will in turn trigger a hyperinflation scenario in the country. In this scenario, Balaji predicts that the price of Bitcoin will soar to $1 million. On the other hand, James Medlock holds a bearish view regarding the likelihood of upcoming hyperinflation in the United States​.</p>
+          </div>
+          <div class="column is-half">
+              <blockquote class="twitter-tweet">
+                  <a href="https://twitter.com/balajis/status/1636797265317867520"></a>
+              </blockquote>
+          </div>
+        </div>
+       
+    
+    </section>
+
+  <script>
+  	const tweetDate = new Date("2023-03-17");
+  	const deadline = new Date(tweetDate.getTime() + (90 * 24 * 60 * 60 * 1000));
+  	
+  	function updateCountdown() {
+		const now = new Date();
+		const diff = deadline - now;
+		const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+		document.getElementById("countdown").textContent = days + " days left until the deadline.";
+  	}
+  	
+  	function renderChart(historicalData) {
+		const trace = {
+  		x: historicalData.map(data => data.date), // Dates
+  		y: historicalData.map(data => data.price), // Bitcoin prices
+  		type: 'scatter'
+		};
+		const goalLine = {
+  		x: [tweetDate.toISOString().split('T')[0], deadline.toISOString().split('T')[0]],
+  		y: [1000000, 1000000],
+  		mode: 'lines',
+  		name: 'Goal ($1,000,000)',
+  		line: { color: 'red', dash: 'dash' }
+		};
+		const layout = {
+  		title: 'Bitcoin Price Chart',
+  		xaxis: {
+			title: 'Date',
+			range: [tweetDate.toISOString().split('T')[0], deadline.toISOString().split('T')[0]],
+  		},
+  		yaxis: { title: 'Bitcoin Price (USD)' }
+		};
+		Plotly.newPlot('chart', [trace, goalLine], layout);
+  	}
+  	
+  	function fetchRealtimePrice() {
+		fetch(`https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd`)
+  		.then(response => response.json())
+  		.then(data => {
+			const btcPrice = parseFloat(data.bitcoin.usd).toFixed(2);
+			document.getElementById("realtime-price").textContent = btcPrice;
+  		});
+  	}
+  	
+  	function fetchHistoricalData() {
+		const endDate = new Date(tweetDate.getTime() + (90 * 24 * 60 * 60 * 1000));
+		const startDateISO = tweetDate.toISOString();
+		const endDateISO = endDate.toISOString();
+		fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range?vs_currency=usd&from=${Date.parse(startDateISO)/1000}&to=${Date.parse(endDateISO)/1000}`)
+  		.then(response => response.json())
+  		.then(data => {
+			const historicalData = data.prices.map(([timestamp, price]) => ({
+  			date: new Date(timestamp).toISOString().split('T')[0],
+  			price
+			}));
+			renderChart(historicalData);
+  		});
+  	}
+  	
+  	updateCountdown();
+  	fetchRealtimePrice();
+  	fetchHistoricalData();
+  </script>
+</body>
+</html>
