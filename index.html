@@ -41,67 +41,68 @@
     </section>
 
   <script>
-  	const tweetDate = new Date("2023-03-17");
-  	const deadline = new Date(tweetDate.getTime() + (90 * 24 * 60 * 60 * 1000));
-  	
-  	function updateCountdown() {
-		const now = new Date();
-		const diff = deadline - now;
-		const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-		document.getElementById("countdown").textContent = days + " days left until the deadline.";
-  	}
-  	
-  	function renderChart(historicalData) {
-		const trace = {
-  		x: historicalData.map(data => data.date), // Dates
-  		y: historicalData.map(data => data.price), // Bitcoin prices
-  		type: 'scatter'
-		};
-		const goalLine = {
-  		x: [tweetDate.toISOString().split('T')[0], deadline.toISOString().split('T')[0]],
-  		y: [1000000, 1000000],
-  		mode: 'lines',
-  		name: 'Goal ($1,000,000)',
-  		line: { color: 'red', dash: 'dash' }
-		};
-		const layout = {
-  		title: 'Bitcoin Price Chart',
-  		xaxis: {
-			title: 'Date',
-			range: [tweetDate.toISOString().split('T')[0], deadline.toISOString().split('T')[0]],
-  		},
-  		yaxis: { title: 'Bitcoin Price (USD)' }
-		};
-		Plotly.newPlot('chart', [trace, goalLine], layout);
-  	}
-  	
-  	function fetchRealtimePrice() {
-		fetch(`https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd`)
-  		.then(response => response.json())
-  		.then(data => {
-			const btcPrice = parseFloat(data.bitcoin.usd).toFixed(2);
-			document.getElementById("realtime-price").textContent = btcPrice;
-  		});
-  	}
-  	
-  	function fetchHistoricalData() {
-		const endDate = new Date(tweetDate.getTime() + (90 * 24 * 60 * 60 * 1000));
-		const startDateISO = tweetDate.toISOString();
-		const endDateISO = endDate.toISOString();
-		fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range?vs_currency=usd&from=${Date.parse(startDateISO)/1000}&to=${Date.parse(endDateISO)/1000}`)
-  		.then(response => response.json())
-  		.then(data => {
-			const historicalData = data.prices.map(([timestamp, price]) => ({
-  			date: new Date(timestamp).toISOString().split('T')[0],
-  			price
-			}));
-			renderChart(historicalData);
-  		});
-  	}
-  	
-  	updateCountdown();
-  	fetchRealtimePrice();
-  	fetchHistoricalData();
+  const tweetDate = new Date("2023-03-17");
+  const currentYear = new Date().getFullYear();
+  const targetDate = new Date(`${currentYear}-06-16`);
+  
+  function updateCountdown() {
+    const now = new Date();
+    const diff = targetDate - now;
+    const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+    document.getElementById("countdown").textContent = days + " days left until June 16th.";
+  }
+  
+  function renderChart(historicalData) {
+    const trace = {
+      x: historicalData.map(data => data.date), // Dates
+      y: historicalData.map(data => data.price), // Bitcoin prices
+      type: 'scatter'
+    };
+    const goalLine = {
+      x: [tweetDate.toISOString().split('T')[0], targetDate.toISOString().split('T')[0]],
+      y: [1000000, 1000000],
+      mode: 'lines',
+      name: 'Goal ($1,000,000)',
+      line: { color: 'red', dash: 'dash' }
+    };
+    const layout = {
+      title: 'Bitcoin Price Chart',
+      xaxis: {
+        title: 'Date',
+        range: [tweetDate.toISOString().split('T')[0], targetDate.toISOString().split('T')[0]],
+      },
+      yaxis: { title: 'Bitcoin Price (USD)' }
+    };
+    Plotly.newPlot('chart', [trace, goalLine], layout);
+  }
+  
+  function fetchRealtimePrice() {
+    fetch(`https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd`)
+      .then(response => response.json())
+      .then(data => {
+        const btcPrice = parseFloat(data.bitcoin.usd).toFixed(2);
+        document.getElementById("realtime-price").textContent = btcPrice;
+      });
+  }
+  
+  function fetchHistoricalData() {
+    const endDate = new Date(tweetDate.getTime() + (90 * 24 * 60 * 60 * 1000));
+    const startDateISO = tweetDate.toISOString();
+    const endDateISO = endDate.toISOString();
+    fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range?vs_currency=usd&from=${Date.parse(startDateISO)/1000}&to=${Date.parse(endDateISO)/1000}`)
+      .then(response => response.json())
+      .then(data => {
+        const historicalData = data.prices.map(([timestamp, price]) => ({
+          date: new Date(timestamp).toISOString().split('T')[0],
+          price
+        }));
+        renderChart(historicalData);
+      });
+  }
+  
+  updateCountdown();
+  fetchRealtimePrice();
+  fetchHistoricalData();
   </script>
 </body>
 </html>
